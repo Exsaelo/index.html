@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis hábitos diarios</title>
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-light: #9FE1CB;
+    --green-mid: #5DCAA5;
+    --green-dark: #085041;
+    --bg: #ffffff;
+    --bg2: #f5f5f3;
+    --bg3: #eeede9;
+    --text: #1a1a18;
+    --text2: #6b6b67;
+    --text3: #a0a09b;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --radius: 10px;
+    --radius-sm: 7px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg2: #252523;
+      --bg3: #2e2e2b;
+      --text: #f0efea;
+      --text2: #a0a09b;
+      --text3: #6b6b67;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.18);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 2rem 1rem; }
+  .card { max-width: 520px; margin: 0 auto; background: var(--bg); border-radius: 18px; border: 1px solid var(--border); overflow: hidden; }
+  .card-header { padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--border); }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .header-left h1 { font-size: 20px; font-weight: 600; color: var(--text); }
+  .header-left .date { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .ring-wrap { position: relative; width: 58px; height: 58px; flex-shrink: 0; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text); }
+  .progress-row { margin-top: 1rem; }
+  .progress-bar-bg { background: var(--bg2); border-radius: 99px; height: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.4s ease; }
+  .progress-info { display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: var(--text3); }
+  .card-body { padding: 1.25rem 1.5rem; }
+  .view-tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; }
+  .view-tab { font-size: 12px; padding: 5px 13px; border-radius: 99px; border: 1px solid var(--border); color: var(--text2); cursor: pointer; background: none; font-family: inherit; transition: all 0.15s; }
+  .view-tab.active { background: var(--bg2); color: var(--text); border-color: var(--border2); font-weight: 500; }
+  .week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; margin-bottom: 1.25rem; }
+  .wday { text-align: center; }
+  .wday-name { font-size: 10px; color: var(--text3); margin-bottom: 5px; text-transform: uppercase; }
+  .wday-dot { width: 32px; height: 32px; border-radius: 50%; margin: 0 auto; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text3); }
+  .wday-dot.today { border-color: var(--green-mid); color: var(--green); font-weight: 600; }
+  .wday-dot.full { background: var(--green); border-color: var(--green); color: #fff; font-weight: 600; }
+  .wday-dot.partial { background: var(--green-light); border-color: var(--green-mid); color: var(--green-dark); }
+  .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .month-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text2); padding: 4px 8px; border-radius: var(--radius-sm); font-family: inherit; }
+  .month-btn:hover { background: var(--bg2); }
+  .month-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 1.25rem; }
+  .cal-head { font-size: 10px; text-align: center; color: var(--text3); padding: 2px 0; text-transform: uppercase; }
+  .cal-cell { aspect-ratio: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text3); }
+  .cal-cell.today { border: 1.5px solid var(--green-mid); color: var(--green); font-weight: 600; }
+  .cal-cell.full { background: var(--green); color: #fff; font-weight: 600; }
+  .cal-cell.partial { background: var(--green-light); color: var(--green-dark); }
+  .legend { display: flex; gap: 14px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .section { margin-bottom: 1.25rem; }
+  .sec-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text2); margin-bottom: 8px; }
+  .habit { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); margin-bottom: 6px; cursor: pointer; transition: background 0.12s; user-select: none; }
+  .habit:hover { background: var(--bg2); }
+  .habit.done { background: var(--bg2); }
+  .cb { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+  .habit.done .cb { background: var(--green); border-color: var(--green); }
+  .cb-mark { display: none; color: #fff; font-size: 11px; line-height: 1; font-weight: 700; }
+  .habit.done .cb-mark { display: block; }
+  .habit-lbl { font-size: 13px; color: var(--text); flex: 1; }
+  .habit.done .habit-lbl { color: var(--text2); text-decoration: line-through; }
+  .habit-time { font-size: 11px; color: var(--text3); white-space: nowrap; }
+  .celebration { text-align: center; padding: 12px 16px; background: var(--bg2); border-radius: var(--radius-sm); margin-top: 0.5rem; font-size: 13px; color: var(--text2); display: none; border: 1px solid var(--border); }
+  .celebration.show { display: block; }
+  .footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; align-items: center; }
+  .reset-btn { font-size: 12px; color: var(--text3); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .reset-btn:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="header-row">
+      <div class="header-left">
+        <h1>Mis hábitos diarios</h1>
+        <div class="date" id="dateStr"></div>
+      </div>
+      <div class="ring-wrap">
+        <svg width="58" height="58" viewBox="0 0 58 58">
+          <circle cx="29" cy="29" r="23" fill="none" stroke="var(--bg2)" stroke-width="5"/>
+          <circle cx="29" cy="29" r="23" fill="none" stroke="var(--green)" stroke-width="5"
+            stroke-linecap="round" id="ringCircle"
+            stroke-dasharray="144.5" stroke-dashoffset="144.5" style="transition:stroke-dashoffset 0.4s ease"/>
+        </svg>
+        <div class="ring-label" id="pctLabel">0%</div>
+      </div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+      <div class="progress-info">
+        <span id="progressText">0 de 11 completados</span>
+        <span id="progressPct">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="setView('semana')">Semana</button>
+      <button class="view-tab" onclick="setView('mes')">Mes</button>
+    </div>
+
+    <div id="viewSemana">
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+    <div id="viewMes" style="display:none">
+      <div class="month-nav">
+        <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+        <div class="month-title" id="monthTitle"></div>
+        <button class="month-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Completado</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green-light)"></div>Parcial</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--border2)"></div>Sin datos</div>
+    </div>
+
+    <div id="habitsContainer"></div>
+    <div class="celebration" id="celebration">Todo completado hoy — vas muy bien, sigue así. 🌿</div>
+  </div>
+
+  <div class="footer">
+    <button class="reset-btn" onclick="resetDay()">Reiniciar día</button>
+  </div>
+</div>
+
+<script>
+const HABITS = [
+  { id:1, sec:'Productividad', label:'Bloque de trabajo profundo (2h)', time:'Mañana' },
+  { id:2, sec:'Productividad', label:'Revisar y priorizar tareas del día', time:'Mañana' },
+  { id:3, sec:'Productividad', label:'Sin redes sociales hasta el mediodía', time:'Mañana' },
+  { id:4, sec:'Productividad', label:'Revisión del día — ¿qué salió bien?', time:'Noche' },
+  { id:5, sec:'Bienestar', label:'Meditación o respiración consciente', time:'Mañana' },
+  { id:6, sec:'Bienestar', label:'Leer 20 minutos', time:'Noche' },
+  { id:7, sec:'Bienestar', label:'Sin pantallas 1h antes de dormir', time:'Noche' },
+  { id:8, sec:'Rutinas', label:'Levantarse a la misma hora', time:'Mañana' },
+  { id:9, sec:'Rutinas', label:'Hacer la cama', time:'Mañana' },
+  { id:10, sec:'Rutinas', label:'Beber 2L de agua', time:'Todo el día' },
+  { id:11, sec:'Rutinas', label:'Preparar ropa y mochila para mañana', time:'Noche' },
+];
+const SECTIONS = [
+  { key:'Productividad', label:'🎯 Productividad / trabajo' },
+  { key:'Bienestar', label:'🧘 Mente y bienestar' },
+  { key:'Rutinas', label:'🌅 Rutinas personales' },
+];
+const TOTAL = HABITS.length;
+const toKey = d => d.toISOString().split('T')[0];
+const todayKey = toKey(new Date());
+
+let state;
+try { state = JSON.parse(localStorage.getItem('habits_v2') || 'null') || { done:{}, hist:{} }; } catch(e) { state = { done:{}, hist:{} }; }
+if (!state.done[todayKey]) state.done[todayKey] = [];
+
+let currentView = 'semana';
+let viewMonth = new Date();
+
+function save() { try { localStorage.setItem('habits_v2', JSON.stringify(state)); } catch(e) {} }
+function isDone(id) { return (state.done[todayKey]||[]).includes(id); }
+function doneCount() { return (state.done[todayKey]||[]).length; }
+
+function toggle(id) {
+  if (!state.done[todayKey]) state.done[todayKey] = [];
+  const idx = state.done[todayKey].indexOf(id);
+  if (idx === -1) state.done[todayKey].push(id); else state.done[todayKey].splice(idx, 1);
+  state.hist[todayKey] = state.done[todayKey].length;
+  save(); render();
+}
+
+function resetDay() {
+  state.done[todayKey] = [];
+  state.hist[todayKey] = 0;
+  save(); render();
+}
+
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.toggle('active', t.textContent.toLowerCase() === v));
+  document.getElementById('viewSemana').style.display = v === 'semana' ? '' : 'none';
+  document.getElementById('viewMes').style.display = v === 'mes' ? '' : 'none';
+  if (v === 'mes') renderMonth();
+}
+
+function changeMonth(d) {
+  viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + d, 1);
+  renderMonth();
+}
+
+function dotClass(key) {
+  const cnt = key === todayKey ? doneCount() : (state.hist[key] || 0);
+  if (cnt >= TOTAL) return 'full';
+  if (cnt > 0) return 'partial';
+  return '';
+}
+
+function renderWeek() {
+  const now = new Date();
+  const dow = now.getDay();
+  const mon = new Date(now); mon.setDate(now.getDate() - ((dow + 6) % 7));
+  const names = ['L','M','X','J','V','S','D'];
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(mon); d.setDate(mon.getDate() + i);
+    const k = toKey(d);
+    const isToday = k === todayKey;
+    const cls = dotClass(k) + (isToday ? ' today' : '');
+    html += `<div class="wday"><div class="wday-name">${names[i]}</div><div class="wday-dot ${cls}">${d.getDate()}</div></div>`;
+  }
+  document.getElementById('weekGrid').innerHTML = html;
+}
+
+function renderMonth() {
+  const y = viewMonth.getFullYear(), m = viewMonth.getMonth();
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('monthTitle').textContent = `${months[m]} ${y}`;
+  const first = new Date(y, m, 1);
+  const last = new Date(y, m + 1, 0);
+  const startDow = (first.getDay() + 6) % 7;
+  const names = ['L','M','X','J','V','S','D'];
+  let html = names.map(n => `<div class="cal-head">${n}</div>`).join('');
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-cell"></div>`;
+  for (let d = 1; d <= last.getDate(); d++) {
+    const k = toKey(new Date(y, m, d));
+    const isToday = k === todayKey;
+    const cls = dotClass(k) + (isToday ? ' today' : '');
+    html += `<div class="cal-cell ${cls}">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function render() {
+  const cnt = doneCount();
+  const pct = Math.round(cnt / TOTAL * 100);
+  const circ = 144.5;
+  document.getElementById('ringCircle').setAttribute('stroke-dashoffset', circ - (circ * pct / 100));
+  document.getElementById('pctLabel').textContent = pct + '%';
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${cnt} de ${TOTAL} completados`;
+  document.getElementById('progressPct').textContent = pct + '%';
+
+  const now = new Date();
+  document.getElementById('dateStr').textContent = now.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  renderWeek();
+  if (currentView === 'mes') renderMonth();
+
+  let html = '';
+  SECTIONS.forEach(sec => {
+    const habits = HABITS.filter(h => h.sec === sec.key);
+    html += `<div class="section"><div class="sec-label">${sec.label}</div>`;
+    habits.forEach(h => {
+      const done = isDone(h.id);
+      html += `<div class="habit ${done ? 'done' : ''}" onclick="toggle(${h.id})">
+        <div class="cb"><span class="cb-mark">✓</span></div>
+        <span class="habit-lbl">${h.label}</span>
+        <span class="habit-time">${h.time}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('habitsContainer').innerHTML = html;
+  document.getElementById('celebration').classList.toggle('show', pct === 100);
+}
+
+render();
+</script>
+</body>
+</html>
